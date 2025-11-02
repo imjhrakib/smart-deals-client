@@ -1,10 +1,21 @@
-import React, { use, useRef } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { useLoaderData } from "react-router";
 import { AuthContext } from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 const ProductDetails = () => {
   const { _id: productId } = useLoaderData();
+  const [bids, setBids] = useState([]);
   const { user } = use(AuthContext);
+
+  useEffect(() => {
+    fetch(`http://localhost:3000/products/bids/${productId}`).then((res) =>
+      res.json().then((data) => {
+        console.log("bids for this products", data);
+        setBids(data);
+      })
+    );
+  }, [productId]);
 
   const bidModalRef = useRef(null);
   const handleBidModalOpen = () => {
@@ -20,6 +31,7 @@ const ProductDetails = () => {
       product: productId,
       buyer_name: name,
       buyer_email: email,
+      buyer_image: user?.photoURL,
       bid_price: bid,
       status: "pending",
     };
@@ -32,7 +44,30 @@ const ProductDetails = () => {
       body: JSON.stringify(newBid),
     })
       .then((res) => res.json())
-      .then((data) => console.log("after submitting bids", data));
+      .then((data) => {
+        if (data.insertedId) {
+          bidModalRef.current.close();
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+          Toast.fire({
+            icon: "success",
+            title: "bid placed successfully",
+          });
+          newBid._id = data.insertedId;
+          const newBids = [...bids, newBid];
+          newBids.sort((a, b) => a.bid_price - b.price);
+          setBids(newBids);
+        }
+      });
   };
   return (
     <div>
@@ -84,6 +119,55 @@ const ProductDetails = () => {
           </div>
         </div>
       </dialog>
+
+      <div>
+        <h3 className="text-3xl">
+          Bids for this Product:{" "}
+          <span className="text-primary">{bids.length}</span>
+          <div className="overflow-x-auto">
+            <table className="table">
+              {/* head */}
+              <thead>
+                <tr>
+                  <th>SL No.</th>
+                  <th>Buyer Name</th>
+                  <th>Buyer Email</th>
+                  <th>Bid Price</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* row 1 */}
+                {bids.map((bid, index) => (
+                  <tr key={bid._id}>
+                    <th>{index + 1}</th>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="avatar">
+                          <div className="mask mask-squircle h-12 w-12">
+                            <img
+                              src="https://img.daisyui.com/images/profile/demo/2@94.webp"
+                              alt="Avatar Tailwind CSS Component"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-bold">{bid.buyer_name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{bid.buyer_email}</td>
+                    <td>{bid.bid_price}</td>
+                    <th>
+                      <button className="btn btn-ghost btn-xs">details</button>
+                    </th>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </h3>
+      </div>
     </div>
   );
 };
