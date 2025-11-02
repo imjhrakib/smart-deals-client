@@ -3,7 +3,17 @@ import { AuthContext } from "../../context/AuthContext";
 import { NavLink } from "react-router";
 
 const Login = () => {
-  const { signInWithGoogle } = use(AuthContext);
+  const { signInUser, signInWithGoogle } = use(AuthContext);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    console.log(e.target.name.value);
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    signInUser(email, password)
+      .then((result) => console.log("Login Successful", result.user.email))
+      .catch((error) => console.log(error.message));
+  };
 
   const handleGoogleSignIn = () => {
     signInWithGoogle()
@@ -14,19 +24,6 @@ const Login = () => {
           email: result.user.email,
           image: result.user.photoURL,
         };
-
-        // create user in the database
-        fetch("http://localhost:3000/users", {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(newUser),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            console.log("data after user save", data);
-          });
       })
       .catch((error) => {
         console.log(error);
@@ -34,7 +31,7 @@ const Login = () => {
   };
 
   return (
-    <div className="card bg-base-100 mx-auto w-full max-w-sm shrink-0 shadow-2xl">
+    <div className="card bg-base-100 mx-auto w-full max-w-sm shrink-0 shadow-2xl mt-15 py-10">
       <h1 className="text-5xl text-center font-bold">Login</h1>
       <h4 className="text-center mt-2.5">
         Don't have an account?{" "}
@@ -43,11 +40,12 @@ const Login = () => {
         </span>
       </h4>
       <div className="card-body">
-        <form>
+        <form onSubmit={handleLogin}>
           <fieldset className="fieldset">
             <label className="label">Email</label>
             <input
               type="email"
+              name="email"
               className="input"
               placeholder="Email"
               required
@@ -55,6 +53,7 @@ const Login = () => {
             <label className="label">Password</label>
             <input
               type="password"
+              name="password"
               className="input"
               placeholder="Password"
               required

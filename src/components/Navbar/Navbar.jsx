@@ -67,11 +67,18 @@ const Navbar = () => {
       </div>
       <div className="navbar-end">
         {user ? (
-          <a onClick={handleSignOut} className="btn">
+          <a onClick={handleSignOut} className="btn btn-primary">
             Sign Out
           </a>
         ) : (
-          <Link to="/login">Login</Link>
+          <div className="flex gap-4">
+            <NavLink to="/login" className="btn border-[#632ee3] btn-outline">
+              Login
+            </NavLink>
+            <NavLink to="/register" className="btn btn-primary">
+              Register
+            </NavLink>
+          </div>
         )}
       </div>
     </div>

@@ -1,15 +1,42 @@
 import React, { use } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { NavLink } from "react-router";
+import { updateProfile } from "firebase/auth";
 
 const Register = () => {
-  const { signInWithGoogle } = use(AuthContext);
+  const { user, createUser, signInWithGoogle } = use(AuthContext);
 
   const handleRegister = (e) => {
     e.preventDefault();
     const name = e.target.name.value;
     const email = e.target.email.value;
-    console.log({ name, email });
+    const password = e.target.password.value;
+    const photoUrl = e.target.photo.value;
+    const newUser = {
+      name,
+      email,
+      password,
+      photoUrl,
+    };
+    createUser(email, password)
+      .then((result) => {
+        const user = result.user;
+        updateProfile(user, {
+          displayName: name,
+          photoUrl: photoUrl,
+        });
+      })
+      .catch((error) => console.dir(error));
+
+    fetch("http://localhost:3000/users", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(newUser),
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data));
   };
 
   const handleGoogleSignIn = () => {
@@ -82,6 +109,7 @@ const Register = () => {
             <input
               type="password"
               className="input"
+              name="password"
               placeholder="Password"
               required
             />
