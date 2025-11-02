@@ -25,7 +25,7 @@ const ProductDetails = () => {
     e.preventDefault();
     const name = e.target.name.value;
     const email = e.target.email.value;
-    const bid = e.target.bid.value;
+    const bid = Number(e.target.bid.value);
     console.log({ productId, name, email, bid });
     const newBid = {
       product: productId,
@@ -64,7 +64,7 @@ const ProductDetails = () => {
           });
           newBid._id = data.insertedId;
           const newBids = [...bids, newBid];
-          newBids.sort((a, b) => a.bid_price - b.price);
+          newBids.sort((a, b) => b.bid_price - a.bid_price);
           setBids(newBids);
         }
       });
