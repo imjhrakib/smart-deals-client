@@ -9,13 +9,17 @@ const ProductDetails = () => {
   const { user } = use(AuthContext);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/products/bids/${productId}`).then((res) =>
+    fetch(`http://localhost:3000/products/bids/${productId}`, {
+      headers: {
+        authorization: `Bearer ${user.accessToken}`,
+      },
+    }).then((res) =>
       res.json().then((data) => {
         console.log("bids for this products", data);
         setBids(data);
       })
     );
-  }, [productId]);
+  }, [productId, user]);
 
   const bidModalRef = useRef(null);
   const handleBidModalOpen = () => {
